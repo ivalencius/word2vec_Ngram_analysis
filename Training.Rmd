@@ -1,0 +1,29 @@
+# Code for training a presorted/cleaned nGram dataset
+
+```{r}
+library(wordVectors)
+library(magrittr)
+dataset_name = "FULL FILENAME/PATH"
+model_name = "FULL FILENAME/PATH"
+```
+
+First we *prepare* a single file for word2vec to read in. This does a couple things:
+
+1. Creates a single text file with the contents of every file in the original document;
+2. Uses the `tokenizers` package to clean and lowercase the original text, 
+3. If `bundle_ngrams` is greater than 1, joins together common bigrams into a single word. For example, "olive oil" may be joined together into "olive_oil" wherever it occurs.
+
+```{r}
+# FILE PREP HANDLED WHEN SORTIN NGRAMS
+#if (!file.exists("/home/sveisa/cc.txt"))
+#  prep_word2vec(origin="/media/ilanv/Backup Plus/nGram_download_and_sort/sorted_nGrams/1900_1909",destination="/media/ilanv/Backup #Plus/R_files/Word2Vec_text/1900_1909.txt",lowercase=T,bundle_ngrams=2)
+```
+
+
+To train a word2vec model, use the function `train_word2vec`. This actually builds up the model.
+
+```{r}
+if (!file.exists(model_name)) {model = train_word2vec(dataset_name, model_name ,vectors=300,threads=4,window=20,cbow=T,iter=2,force=T,negative_samples=3)} else model = read.vectors(model_name)
+
+#write.table(model, file='test2.tsv', quote=FALSE, sep='\t',col.names = FALSE) #for tensorflow
+```
