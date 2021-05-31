@@ -23,7 +23,7 @@ First we *prepare* a single file for word2vec to read in. This does a couple thi
 To train a word2vec model, use the function `train_word2vec`. This actually builds up the model.
 
 ```{r}
-if (!file.exists(model_name)) {model = train_word2vec(dataset_name, model_name ,vectors=300,threads=4,window=20,cbow=T,iter=2,force=T,negative_samples=3)} else model = read.vectors(model_name)
+if (!file.exists(model_name)) {model = train_word2vec(dataset_name, model_name ,vectors=300,threads=4,window=20,cbow=T,iter=15,force=T,negative_samples=3)} else model = read.vectors(model_name)
 
 #write.table(model, file='test2.tsv', quote=FALSE, sep='\t',col.names = FALSE) #for tensorflow
 ```
