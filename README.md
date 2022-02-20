@@ -3,11 +3,12 @@ Project to train [word2vec](https://jalammar.github.io/illustrated-word2vec/) mo
 
 ## Layout
 * [Training.py](https://github.com/ivalencius/R_nGram_analysis/blob/main/Training.py) → File to train word2vec models. Models will be stored in /Models/ but are to large to upload to GitHub.
+* [get_model_info.py](https://github.com/ivalencius/R_nGram_analysis/blob/main/get_model_info.py) → Extracts vocab size from all saved KeyedVector models.
 * [Investigation.Rmd](https://github.com/ivalencius/R_nGram_analysis/blob/main/Investigation.Rmd) → File to open and examine trained word2vec models.
 * [Model_info](https://github.com/ivalencius/R_nGram_analysis/blob/main/Model_info.xlsx) → Information regarding the location of data on the SSD as well as metadata regarding the trained word2vec models.
 
 ## Parameters for Training Models
 For use in [Model_info.xlsx](https://github.com/ivalencius/R_nGram_analysis/blob/main/Model_info.xlsx)
-Parameter name | Parameters
-------------- | -------------
-v1 | sg=1, vector_size=300, window=5, min_count=10, workers=4, hs=0, negative=8
+Parameter name | Parameters | Justification
+------------- | ------------- | -------------
+v1 | sg=1, vector_size=300, window=5, min_count=10, workers=4, hs=0, negative=8 | [Kozlowski, A. C., Taddy, M., & Evans, J. A. (2019](https://github.com/KnowledgeLab/GeometryofCulture)
