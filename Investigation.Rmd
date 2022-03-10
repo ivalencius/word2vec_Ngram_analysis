@@ -4,16 +4,61 @@
 library(wordVectors)
 library(magrittr)
 library(word2vec)
-modelname = "/media/ilanv/Backup Plus/R_nGram_analysis/Models/1940_testing_vectors.bin"
+model_base_path = "D:\\word2vec_Ngram_analysis\\Models\\"
+file_prefix <- c("pre_1899",
+                 "1900_1909",
+                 "1910_1919",
+                 "1920_1929",
+                 "1930_1939",
+                 "1940_1949",
+                 "1950_1959",
+                 "1960_1969",
+                 "1970_1979",
+                 "1980_1989",
+                 "1990_1999",
+                 "2000_2009")
 ```
+# Testing Loop
+
+```{r}
+for (prefix in file_prefix) {
+  # Load Vectors
+  model_name = paste(prefix, '_vectors.bin', sep="")
+  full_model_name = paste(model_base_path, model_name, sep="")
+  model = read.vectors(full_model_name)
+  
+  #Define Terms of interest
+  words = c("hysterical","hysteria")
+  terms = model[rownames(model) %in% words,]
+  
+  # Determine similarity
+  male = terms %>% cosineSimilarity(model[[c("man","boy")]])
+  female = terms %>% cosineSimilarity(model[[c("woman","girl")]])
+ 
+  female<-as.data.frame(female)
+  score <- cbind(rownames(male), data.frame(male, row.names=NULL))
+  score$female<-female$V1
+  score$difference<-score$male-score$female
+  score$time<-prefix
+  assign(paste(prefix, sep = ""), score)
+
+}
+```
+# Test Loading pairs of words from a text file
+
+```{r}
+pair_filename = "D:\\word2vec_Ngram_analysis\\pair_list.csv"
+pair_df <- read.csv(pair_filename)
+
+# Make an example pair 
+ex_pair = c(pair_df[["WORD1"]][1], pair_df[["WORD2"]][1])
+```
+# For  Loading a Full Model
 
 ```{r}
 model <- read.word2vec(modelname)
 emb <- as.matrix(model)
-```
 
-
-```{r}
 # Get similar terms to combined terms
 vector <- emb["leader", ] + emb["man", ] + emb["country", ] + emb["land",] - emb["woman",]
 predict(model, vector, type = "nearest", top_n = 50)
