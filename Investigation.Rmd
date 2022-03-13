@@ -1,48 +1,146 @@
 # Code for investigating pretrained nGram Models
-
 ```{r}
-library(wordVectors)
+#library(wordVectors)
 library(magrittr)
 library(word2vec)
-model_base_path = "D:\\word2vec_Ngram_analysis\\Models\\"
-file_prefix <- c("pre_1899",
-                 "1900_1909",
-                 "1910_1919",
-                 "1920_1929",
-                 "1930_1939",
-                 "1940_1949",
-                 "1950_1959",
-                 "1960_1969",
-                 "1970_1979",
-                 "1980_1989",
-                 "1990_1999",
-                 "2000_2009")
-```
-# Testing Loop
+library(ggplot2)
+library(directlabels)
 
+model_base_path = "D:\\word2vec_Ngram_analysis\\Models\\"
+#model_base_path = "/home/sveisa/"
+file_prefix <- c("pre_1899",
+                  "1900_1909",
+                  "1910_1919",
+                  "1920_1929",
+                  "1930_1939",
+                  "1940_1949",
+                  "1950_1959",
+                  "1960_1969",
+                  "1970_1979",
+                  "1980_1989"
+                  #"1990_1999", # for some reasons says 1990_1999 is empty
+                  #"2000_2009"
+                 )
+```
+
+# Load all models and give them separate names
 ```{r}
 for (prefix in file_prefix) {
   # Load Vectors
   model_name = paste(prefix, '_vectors.bin', sep="")
   full_model_name = paste(model_base_path, model_name, sep="")
-  model = read.vectors(full_model_name)
-  
-  #Define Terms of interest
-  words = c("hysterical","hysteria")
-  terms = model[rownames(model) %in% words,]
-  
-  # Determine similarity
-  male = terms %>% cosineSimilarity(model[[c("man","boy")]])
-  female = terms %>% cosineSimilarity(model[[c("woman","girl")]])
- 
-  female<-as.data.frame(female)
-  score <- cbind(rownames(male), data.frame(male, row.names=NULL))
-  score$female<-female$V1
-  score$difference<-score$male-score$female
-  score$time<-prefix
-  assign(paste(prefix, sep = ""), score)
-
+  #model = read.vectors(full_model_name)
+  assign(paste0("model", c(prefix)), read.word2vec(full_model_name))
 }
+```
+
+# Investigate word relationships in the loaded models
+Load both pairs of words through the pair_list.csv file
+```{r}
+#Define Terms of interest
+wordlist_filename = "D:/word2vec_Ngram_analysis/pair_list.csv"
+wordlist_df <- read.csv(wordlist_filename)
+WORDS1 <- wordlist_df$WORD1
+WORDS2 <- wordlist_df$WORD2
+
+#create data frame to hold scores
+scores <- data.frame(
+  time = character(),
+  word1 = double(),
+  word2 = double(),
+  similarity = double()
+)
+
+for (prefix in file_prefix){
+  #### Run example on one pair of words, boy, young ###
+  #words = c("male","young")
+  
+  ### Get current model by string reference ###
+  model <- get(paste0("model", c(prefix)))
+  emb <- as.matrix(model)
+  
+  ### Loop over all pairs of words from csv file ###
+  for(i in 1:nrow(wordlist_df)) {
+    word1 <- WORDS1[[i]]
+    word2 <- WORDS2[[i]]
+    similarity_table <- word2vec_similarity(
+     emb[word1,],
+     emb[word2,],
+     top_n = 1
+   )
+   similarity <- similarity_table$similarity
+   scores[nrow(scores)+1,] <- c(prefix, word1, word2, similarity)
+  }
+}
+```
+
+# Example code demonstrating various ways to access/use vectors
+
+```{r}
+### EXAMPLE ###
+  ### Load Vectors ###
+  model <- read.word2vec('MODEL_PATH_HERE')
+  emb <- as.matrix(model) # <- representation of words as vectors, their "embeddings"
+
+  ### Get similar terms to combined terms ###
+  vectors <- emb["country", ] + emb["large", ] - emb["peace",] # <- adds all the vectors together, 
+  # can also subtract, this would ideally return large countries at war (because subtracting 'peace')
+  predict(model,
+     vectors,
+     type = "nearest",
+     top_n = 10
+   )
+
+  ### Getting most similar terms to every word in a list ###
+   word2vec_similarity(
+     emb[c("war","and","peace"),], # <- add the list 
+     emb, # <- for each word, determines the top_n closest vectors from ALL of emb
+     top_n = 5
+   )
+
+  ### For comparing similarity of two words ###
+   male_results <- word2vec_similarity(
+     emb["man",],
+     emb["boy",], # <- only comparing 'man' to one vector
+     top_n = 1
+   )
+   male_score <- male_results$similarity
+   
+  ### For comparing similarity of one word to a select set of words ###
+   male_results <- word2vec_similarity(
+     emb["man",],
+     emb[c("woman","female","boy","girl")], # <- only compare to these vectors
+     top_n = 1
+   )
+
+```
+
+# merge and plot results
+
+```{r}
+data_list <- list(`pre_1899`,
+                `1900_1909`,
+                  `1910_1919`,
+                  `1920_1929`,
+                  `1930_1939`,
+                  `1940_1949`,
+                  `1950_1959`,
+                  `1960_1969`,
+                  `1970_1979`,
+                  `1980_1989`,
+                  `1990_1999`,
+                 `2000_2009`)
+all<-Reduce(function(x, y) merge(x, y, all=TRUE), data_list)
+all$words<-all$`rownames(male)`
+all$`rownames(male)`<-NULL
+all$difference<-NULL
+
+df_long<-reshape2::melt(data=all, id.vars = c("words", "time"),variable.name = "Topic",value.name = "count")
+df_long$gender_words<-paste(df_long$Topic,df_long$words)
+p<-ggplot(data=df_long, aes(x=time, y=count, group=gender_words, colour=gender_words)) +  geom_line(aes(linetype=gender_words), size=0.5) + geom_point(aes(shape=gender_words)) + geom_dl(aes(label=gender_words,color=gender_words), method = list("last.points", hjust=0.9))
+p + ggtitle("") + xlab("Time") + ylab("Ratio") + theme_classic() + theme(legend.position="none")
+ggsave("chart.png", width = 10, height = 6,limitsize=FALSE)
+
 ```
 # Test Loading pairs of words from a text file
 
@@ -56,11 +154,11 @@ ex_pair = c(pair_df[["WORD1"]][1], pair_df[["WORD2"]][1])
 # For  Loading a Full Model
 
 ```{r}
-model <- read.word2vec(modelname)
+model <- read.word2vec(full_model_name)
 emb <- as.matrix(model)
 
 # Get similar terms to combined terms
-vector <- emb["leader", ] + emb["man", ] + emb["country", ] + emb["land",] - emb["woman",]
+vectors <- emb["leader", ] + emb["man", ] + emb["country", ] + emb["land",] - emb["woman",]
 predict(model, vector, type = "nearest", top_n = 50)
 
 # Get most similar terms for each individual term
