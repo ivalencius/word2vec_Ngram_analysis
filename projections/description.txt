@@ -1,0 +1,1 @@
+The antonym pairs and much of the code is adopted from https://github.com/KnowledgeLab/GeometryofCulture
