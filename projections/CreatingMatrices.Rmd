@@ -6,15 +6,14 @@ library(ggplot2)
 library(directlabels)
 ```
 
-# SET WORKING DIR #
 ```{r}
-setwd('C:\\Users\\isak\\Documents')
 memory.limit(1500000)
 ```
 
 ```{r}
 # LOAD TRAINED NGRAM DATA #
-decade = '2000_2009'
+setwd('C:\\Users\\isak\\Documents')
+decade = '1900_1909'
 modelname <- paste(decade,'_vectors.bin', sep="") 
 model = read.vectors(modelname)
 df<-as.matrix(model)
