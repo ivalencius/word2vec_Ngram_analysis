@@ -1,0 +1,76 @@
+```{r}
+library(wordVectors)
+library(magrittr)
+library(word2vec)
+library(ggplot2)
+library(directlabels)
+```
+
+# SET WORKING DIR #
+```{r}
+setwd('C:\\Users\\isak\\Documents')
+memory.limit(1500000)
+```
+
+```{r}
+# LOAD TRAINED NGRAM DATA #
+decade = '2000_2009'
+modelname <- paste(decade,'_vectors.bin', sep="") 
+model = read.vectors(modelname)
+df<-as.matrix(model)
+```
+
+# DEFINE FUNCTIONS, LOAD ANTONYM PAIRS, CREATE AND SAVE MATRICES #
+```{r}
+norm_vec <- function(x) sqrt(sum(x^2)) #Calculate norm of vector#
+dot <- function(x,y) (sum(x*y)) #Dot product#
+cos <- function(x,y) dot(x,y)/norm_vec(x)/norm_vec(y) #Cosine Similarity#
+nrm <- function(x) x/norm_vec(x) #Normalize vector#
+dimension<-function(x,y) nrm(nrm(x)-nrm(y)) #Calculate semantic dimension from antonym pair#
+
+# STORE EMBEDDING AS MATRIX, NORMALIZE WORD VECTORS #
+cdfmn<-t(apply(df,1,nrm))
+
+# IMPORT LISTS OF TERMS TO PROJECT AND ANTONYM PAIRS #
+ant_pairs_aff <- read.csv("affluence_pairs.csv",header=FALSE, stringsAsFactor=F)
+ant_pairs_gen <- read.csv("gender_pairs.csv",header=FALSE, stringsAsFactor=F)
+ant_pairs_race <- read.csv("race_pairs.csv",header=FALSE, stringsAsFactor=F)
+
+word_dims<-matrix(NA,nrow(ant_pairs_aff),300)
+
+# SETUP "make_dim" FUNCTION, INPUT EMBEDDING AND ANTONYM PAIR LIST #
+# OUTPUT AVERAGE SEMANTIC DIMENSION #
+make_dim<-function(embedding,pairs){word_dims<-data.frame(matrix(NA,nrow(pairs),300))
+  for (j in 1:nrow(pairs)){
+    rp_word1<-pairs[j,1]
+    rp_word2<-pairs[j,2]
+    tryCatch(word_dims[j,]<-dimension(embedding[rp_word1,],embedding[rp_word2,]),error=function(e){})
+  }
+  dim_ave<-colMeans(word_dims, na.rm = TRUE)
+  dim_ave_n<-nrm(dim_ave)
+  return(dim_ave_n)
+}
+
+#####CONSTRUCT AFFLUENCE, GENDER, AND RACE DIMENSIONS######
+aff_dim<-make_dim(df,ant_pairs_aff)
+gender_dim<-make_dim(df,ant_pairs_gen)
+race_dim<-make_dim(df,ant_pairs_race)
+
+####ANGLES BETWEEN DIMENSIONS#######
+cos(aff_dim,gender_dim)
+cos(aff_dim,race_dim)
+cos(gender_dim,race_dim)
+
+####CALCULATE PROJECTIONS BY MATRIX MULTIPLICATION####
+#(Equivalent to cosine similarity because vectors are normalized)#
+# a word at 0 is neutral, between the antonym pairs, negative values towards women, positive towards men #
+aff_proj<-cdfmn%*%aff_dim
+gender_proj<-cdfmn%*%gender_dim
+race_proj<-cdfmn%*%race_dim
+
+# measure every word to each one of the three antonym pairs and save df for fast loading #
+projections_df<-cbind(aff_proj, gender_proj, race_proj) 
+colnames(projections_df)<-c("aff_proj","gender_proj","race_proj")
+df<-as.data.frame(projections_df)
+write.csv(df,file=paste('matrix',decade,'.csv', sep="")) 
+```
