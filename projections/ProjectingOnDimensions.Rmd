@@ -20,6 +20,13 @@ for (dec in decade) {
   read.csv(paste("matrix", dec, ".csv", sep=""), row.names = 1, header= TRUE))
   }
 ```
+# LOAD ONE MATRIX #
+```{r}
+decade = "1910_1919"
+matrix <- read_csv(paste("matrix",decade,".csv", sep=""))
+colnames(matrix)[1] <- "words"
+```
+
 
 # ANALYZE MATRICES -- OUTPUT RESULTS #
 ```{r}
