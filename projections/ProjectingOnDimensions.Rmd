@@ -18,17 +18,10 @@ for (dec in decade) {
   model_name = paste('matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
   read.csv(paste("matrix", dec, ".csv", sep=""), row.names = 1, header= TRUE))
-  }
-```
-# LOAD ONE MATRIX #
-```{r}
-decade = "1910_1919"
-matrix <- read_csv(paste("matrix",decade,".csv", sep=""))
-colnames(matrix)[1] <- "words"
+}
 ```
 
-
-# ANALYZE MATRICES -- OUTPUT RESULTS #
+# ANALYZE ALL #
 ```{r}
 for (dec in decade) {
 wordlist_df <- read.csv("wordlist.csv")
@@ -57,6 +50,29 @@ df<-do.call("rbind", list(
   # results1990_1999,
    results2000_2009
   ))
+```
+
+# LOAD ONE MATRIX #
+```{r}
+setwd('C:\\Users\\isak\\Documents')
+decade = "1910_1919"
+matrix <- read_csv(paste("matrix",decade,".csv", sep=""))
+matrix <- as.data.frame(matrix)
+colnames(matrix)[1] <- "words"
+samp2 <- matrix[,-1]
+rownames(samp2) <- matrix[,1]
+df<-samp2
+
+### SEARCH FOR WORDS AND CREATE VISUALIZATION###
+wordlist_filename = "wordlist.csv" #words=c("mad","elegant")
+wordlist_df <- read.csv(wordlist_filename)
+words = c(wordlist_df[["WORD1"]])
+df<-data.frame(df[words,])
+df$time<-decade
+df <- cbind(rownames(df), data.frame(df, row.names=NULL)) #if you need to make rownames a column
+colnames(df)[1] <- "words" 
+assign(paste0("results", c(decade)), as.data.frame(df))
+#write.csv(get(paste0("results", c(decade))),file=paste("results",decade,'.csv', sep=""),row.names = FALSE)
 ```
 
 # VIZ 1 #
