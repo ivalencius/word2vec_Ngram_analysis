@@ -13,8 +13,8 @@ decade <- c(#"pre_1899",
                   "1910_1919",
                   "1920_1929",
                   "1930_1939",
-                  "1940_1949",
-                   "1950_1959",
+                  '1940_1949',
+                  '1950_1959',
                    "1960_1969",
                    "1970_1979",
                    "1980_1989",
@@ -22,8 +22,8 @@ decade <- c(#"pre_1899",
                    "2000_2009"
                  )
 
+dir = '/home/sveisa/'
 dir= 'C:\\Users\\isak\\Documents\\'
-#dir = '/home/sveisa/'
 for (dec in decade) {
   model_name = paste(dir,'matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
@@ -51,14 +51,14 @@ df<-do.call("rbind", list(
    results1900_1909,
    results1910_1919,
    results1920_1929,
-  # results1930_1939,
-   results1940_1949#,
-  # results1950_1959,
-  # results1960_1969,
-  # results1970_1979,
-  # results1980_1989,
-  # results1990_1999,
-  # results2000_2009
+   results1930_1939,
+   results1940_1949,
+   results1950_1959,
+   results1960_1969,
+   results1970_1979,
+   results1980_1989,
+   results1990_1999,
+   results2000_2009
   ))
 ```
 
@@ -97,7 +97,8 @@ Visualization+ theme_bw() +ylim(-.25,.25) +xlim(-.25,.25)
 df_long<-reshape2::melt(data=df, id.vars = c("words", "time"),variable.name = "Topic",value.name = "count")
 df_long$gender_words<-paste(df_long$Topic,df_long$words)
 df_long<-df_long[grepl("gender", df_long$Topic),] #select dimension (or remove rows containing string, if grepl is prefaced by !)
-p <- ggplot(data=df_long, aes(x=time, y=as.numeric(count), group=words, colour=words)) +  geom_line(aes(linetype=words), size=0.5) + geom_point(aes(shape=words)) + geom_dl(aes(label=words,color=words), method = list("last.points", hjust=0.9))
-p + ggtitle("") + xlab("Time") + ylab("Ratio") + theme_bw() +ylim(-.25,.25)+ theme(legend.position="none")
-p
-#ggsave("chart.png", width = 10, height = 6,limitsize=FALSE)
+p <- ggplot(data=df_long, aes(x=time, y=as.numeric(count), group=words, colour=words)) +  geom_line(aes(linetype=words), size=0.5) + geom_point(aes(shape=words)) + geom_dl(aes(label=words,color=words), method = list("last.points", cex = 0.6, hjust=0.9))
+p1<-p + ggtitle("") + xlab("Time") + ylab("Gender") + theme_bw() +ylim(-.25,.25)+ theme(legend.position="none")
+#direct.label(p1, list("angled.boxes", cex=0.5))
+ggsave("chart.png", width = 10, height = 6,limitsize=FALSE)
+```
