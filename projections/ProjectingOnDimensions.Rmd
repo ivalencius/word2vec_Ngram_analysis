@@ -23,7 +23,7 @@ decade <- c(#"pre_1899",
                  )
 
 dir= 'C:\\Users\\isak\\Documents\\'
-dir = '/home/sveisa/'
+#dir = '/home/sveisa/'
 for (dec in decade) {
   model_name = paste(dir,'matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
