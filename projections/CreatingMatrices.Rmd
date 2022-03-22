@@ -7,14 +7,14 @@ library(directlabels)
 ```
 
 ```{r}
-memory.limit(1500000)
+#memory.limit(1500000)
+dir='/home/sveisa/'
 ```
 
 ```{r}
 # LOAD TRAINED NGRAM DATA #
-setwd('C:\\Users\\isak\\Documents')
-decade = '1900_1909'
-modelname <- paste(decade,'_vectors.bin', sep="") 
+decade = '1960_1969'
+modelname <- paste(dir,decade,'_vectors.bin', sep="") 
 model = read.vectors(modelname)
 df<-as.matrix(model)
 ```
