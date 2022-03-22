@@ -1,35 +1,44 @@
+```{r}
+library(wordVectors)
+library(magrittr)
+library(word2vec)
+library(ggplot2)
+library(directlabels)
+library(readr)
+```
 # LOAD ALL MATRICES #
 ```{r}
 decade <- c(#"pre_1899",
                   "1900_1909",
                   "1910_1919",
                   "1920_1929",
-                  "1930_1939",
-                  "1940_1949",
-                  "1950_1959",
-                  "1960_1969",
-                  "1970_1979",
-                  "1980_1989",
-                  "1990_1999",
-                  "2000_2009"
+                #  "1930_1939",
+                  "1940_1949"
+                  # "1950_1959",
+                  # "1960_1969",
+                  # "1970_1979",
+                  # "1980_1989",
+                  # "1990_1999",
+                  # "2000_2009"
                  )
 
+dir = '/home/sveisa/'
 for (dec in decade) {
-  model_name = paste('matrix',dec, '.csv', sep="")
+  model_name = paste(dir,'matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
-  read.csv(paste("matrix", dec, ".csv", sep=""), row.names = 1, header= TRUE))
+  read.csv(paste(dir,"matrix", dec, ".csv", sep=""), row.names = 1, header= TRUE))
 }
 ```
 
 # ANALYZE ALL #
 ```{r}
 for (dec in decade) {
-wordlist_df <- read.csv("wordlist.csv")
+wordlist_df <- read.csv(paste(dir,"wordlist.csv", sep=""))
 words = c(wordlist_df[["WORD1"]])
 results<-data.frame(get(paste0("matrix", c(dec)))[words,])
 results$time<-dec
 results <- cbind(rownames(results),data.frame(results, row.names=NULL))
-colnames(results)[1] <- "keywords" 
+colnames(results)[1] <- "words" 
 assign(paste0("results", c(dec)), results)
 #write.csv(results, file=paste("results", decade, '.csv', sep=""), row.names = FALSE)
 }
@@ -38,33 +47,33 @@ assign(paste0("results", c(dec)), results)
 # MERGE RESULTS #
 ```{r}
 df<-do.call("rbind", list(
-  # results1900_1909,
-  # results1910_1919,
-  # results1920_1929,
+   results1900_1909,
+   results1910_1919,
+   results1920_1929,
   # results1930_1939,
-  # results1940_1949,
-   results1950_1959,
+   results1940_1949#,
+  # results1950_1959,
   # results1960_1969,
   # results1970_1979,
   # results1980_1989,
   # results1990_1999,
-   results2000_2009
+  # results2000_2009
   ))
 ```
 
 # LOAD ONE MATRIX #
 ```{r}
-setwd('C:\\Users\\isak\\Documents')
-decade = "1910_1919"
-matrix <- read_csv(paste("matrix",decade,".csv", sep=""))
+decade = "1920_1929"
+matrix <- read_csv(paste("/home/sveisa/matrix",decade,".csv", sep=""))
 matrix <- as.data.frame(matrix)
 colnames(matrix)[1] <- "words"
 samp2 <- matrix[,-1]
 rownames(samp2) <- matrix[,1]
 df<-samp2
-
-### SEARCH FOR WORDS AND CREATE VISUALIZATION###
-wordlist_filename = "wordlist.csv" #words=c("mad","elegant")
+```
+### IN ONE MATRIX - SEARCH FOR WORDS AND CREATE VISUALIZATION###
+```{r}
+wordlist_filename = "/home/sveisa/wordlist.csv" #words=c("mad","elegant")
 wordlist_df <- read.csv(wordlist_filename)
 words = c(wordlist_df[["WORD1"]])
 df<-data.frame(df[words,])
@@ -84,10 +93,10 @@ Visualization+ theme_bw() +ylim(-.25,.25) +xlim(-.25,.25)
 
 # VIZ 2 #
 ```{r}
-df_long<-reshape2::melt(data=df, id.vars = c("keywords", "time"),variable.name = "Topic",value.name = "count")
-df_long$gender_words<-paste(df_long$Topic,df_long$keywords)
-df_long<-df_long[grepl("gender", df_long$Topic),] #select dimension (or remove rows containing string, if grepl is prefixed by !)
-p <- ggplot(data=df_long, aes(x=time, y=as.numeric(count), group=keywords, colour=keywords)) +  geom_line(aes(linetype=keywords), size=0.5) + geom_point(aes(shape=keywords)) + geom_dl(aes(label=keywords,color=keywords), method = list("last.points", hjust=0.9))
+df_long<-reshape2::melt(data=df, id.vars = c("words", "time"),variable.name = "Topic",value.name = "count")
+df_long$gender_words<-paste(df_long$Topic,df_long$words)
+df_long<-df_long[grepl("gender", df_long$Topic),] #select dimension (or remove rows containing string, if grepl is prefaced by !)
+p <- ggplot(data=df_long, aes(x=time, y=as.numeric(count), group=words, colour=words)) +  geom_line(aes(linetype=words), size=0.5) + geom_point(aes(shape=words)) + geom_dl(aes(label=words,color=words), method = list("last.points", hjust=0.9))
 p + ggtitle("") + xlab("Time") + ylab("Ratio") + theme_bw() +ylim(-.25,.25)+ theme(legend.position="none")
+p
 #ggsave("chart.png", width = 10, height = 6,limitsize=FALSE)
-```
