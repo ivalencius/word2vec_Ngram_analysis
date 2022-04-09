@@ -8,7 +8,7 @@ library(readr)
 ```
 # LOAD ALL MATRICES #
 ```{r}
-decade <- c(#"pre_1899",
+decade <- c("pre_1899",
                   "1900_1909",
                   "1910_1919",
                   "1920_1929",
@@ -21,9 +21,9 @@ decade <- c(#"pre_1899",
                    "1990_1999",
                    "2000_2009"
                  )
-
-dir = '/home/sveisa/'
-dir= 'C:\\Users\\isak\\Documents\\'
+#decade = c("1960_1969")
+#dir = '/home/sveisa/'
+dir= 'D:\\word2vec_Ngram_analysis\\projections\\matrices\\'
 for (dec in decade) {
   model_name = paste(dir,'matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
@@ -41,7 +41,7 @@ results$time<-dec
 results <- cbind(rownames(results),data.frame(results, row.names=NULL))
 colnames(results)[1] <- "words" 
 assign(paste0("results", c(dec)), results)
-#write.csv(results, file=paste("results", decade, '.csv', sep=""), row.names = FALSE)
+write.csv(results, file=paste("results", decade, '.csv', sep=""), row.names = FALSE)
 }
 ```
 
@@ -60,12 +60,14 @@ df<-do.call("rbind", list(
    results1990_1999,
    results2000_2009
   ))
+#df <- do.call("rbind",list(results1960_1969))
 ```
 
 # LOAD ONE MATRIX #
 ```{r}
-decade = "1920_1929"
-matrix <- read_csv(paste("/home/sveisa/matrix",decade,".csv", sep=""))
+matrix_prefix <- "D:\\word2vec_Ngram_analysis\\projections\\matrices\\matrix"
+decade = "1960_1969"
+matrix <- read_csv(paste(matrix_prefix,decade,".csv", sep=""))
 matrix <- as.data.frame(matrix)
 colnames(matrix)[1] <- "words"
 samp2 <- matrix[,-1]
@@ -74,7 +76,8 @@ df<-samp2
 ```
 ### IN ONE MATRIX - SEARCH FOR WORDS AND CREATE VISUALIZATION###
 ```{r}
-wordlist_filename = "/home/sveisa/wordlist.csv" #words=c("mad","elegant")
+#wordlist_filename = "/home/sveisa/wordlist.csv" #words=c("mad","elegant")
+wordlist_filename = "D:\\word2vec_Ngram_analysis\\projections\\wordlist.csv" #words=c("mad","elegant")
 wordlist_df <- read.csv(wordlist_filename)
 words = c(wordlist_df[["WORD1"]])
 df<-data.frame(df[words,])
@@ -82,7 +85,7 @@ df$time<-decade
 df <- cbind(rownames(df), data.frame(df, row.names=NULL)) #if you need to make rownames a column
 colnames(df)[1] <- "words" 
 assign(paste0("results", c(decade)), as.data.frame(df))
-#write.csv(get(paste0("results", c(decade))),file=paste("results",decade,'.csv', sep=""),row.names = FALSE)
+write.csv(get(paste0("results", c(decade))),file=paste("results",decade,'.csv', sep=""),row.names = FALSE)
 ```
 
 # VIZ 1 #
