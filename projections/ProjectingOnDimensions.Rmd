@@ -8,7 +8,7 @@ library(readr)
 ```
 # LOAD ALL MATRICES #
 ```{r}
-decade <- c("pre_1899",
+decade <- c(#"pre_1899",
                   "1900_1909",
                   "1910_1919",
                   "1920_1929",
@@ -22,8 +22,8 @@ decade <- c("pre_1899",
                    "2000_2009"
                  )
 #decade = c("1960_1969")
-#dir = '/home/sveisa/'
-dir= 'D:\\word2vec_Ngram_analysis\\projections\\matrices\\'
+dir = '/home/sveisa/'
+#dir= 'D:\\word2vec_Ngram_analysis\\projections\\matrices\\'
 for (dec in decade) {
   model_name = paste(dir,'matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
@@ -41,7 +41,7 @@ results$time<-dec
 results <- cbind(rownames(results),data.frame(results, row.names=NULL))
 colnames(results)[1] <- "words" 
 assign(paste0("results", c(dec)), results)
-write.csv(results, file=paste("results", decade, '.csv', sep=""), row.names = FALSE)
+#write.csv(results, file=paste("results", decade, '.csv', sep=""), row.names = FALSE)
 }
 ```
 
@@ -60,7 +60,19 @@ df<-do.call("rbind", list(
    results1990_1999,
    results2000_2009
   ))
-#df <- do.call("rbind",list(results1960_1969))
+```
+
+
+# VIZ - MULTIPLE MATRICES #
+```{r}
+df_long<-reshape2::melt(data=df, id.vars = c("words", "time"),variable.name = "Topic",value.name = "count")
+df_long$gender_words<-paste(df_long$Topic,df_long$words)
+df_long<-df_long[grepl("gender", df_long$Topic),] #select dimension (or remove rows containing string, if grepl is prefaced by !)
+p <- ggplot(data=df_long, aes(x=time, y=as.numeric(count), group=words, colour=words)) +  geom_line(aes(linetype=words), size=0.5) + geom_point(aes(shape=words)) + geom_dl(aes(label=words,color=words), method = list("last.points", cex = 0.6, hjust=0.9))
+p1<-p + ggtitle("") + xlab("Time") + ylab("Gender") + theme_bw() +ylim(-.25,.25)+ theme(legend.position="none")
+#direct.label(p1, list("angled.boxes", cex=0.5))
+p1
+#ggsave("chart.png", width = 10, height = 6,limitsize=FALSE)
 ```
 
 # LOAD ONE MATRIX #
@@ -74,7 +86,8 @@ samp2 <- matrix[,-1]
 rownames(samp2) <- matrix[,1]
 df<-samp2
 ```
-### IN ONE MATRIX - SEARCH FOR WORDS AND CREATE VISUALIZATION###
+
+### IN ONE MATRIX - SEARCH FOR WORDS AND CREATE VISUALIZATION ###
 ```{r}
 #wordlist_filename = "/home/sveisa/wordlist.csv" #words=c("mad","elegant")
 wordlist_filename = "D:\\word2vec_Ngram_analysis\\projections\\wordlist.csv" #words=c("mad","elegant")
@@ -88,20 +101,9 @@ assign(paste0("results", c(decade)), as.data.frame(df))
 write.csv(get(paste0("results", c(decade))),file=paste("results",decade,'.csv', sep=""),row.names = FALSE)
 ```
 
-# VIZ 1 #
+# VIZ ONE MATRIX #
 ```{r}
 df$wordtime<-paste(df$words,df$time)
 Visualization<-ggplot(data=df,aes(x=gender_proj,y=aff_proj,label=wordtime)) + geom_text()
 Visualization+ theme_bw() +ylim(-.25,.25) +xlim(-.25,.25)
-```
-
-# VIZ 2 #
-```{r}
-df_long<-reshape2::melt(data=df, id.vars = c("words", "time"),variable.name = "Topic",value.name = "count")
-df_long$gender_words<-paste(df_long$Topic,df_long$words)
-df_long<-df_long[grepl("gender", df_long$Topic),] #select dimension (or remove rows containing string, if grepl is prefaced by !)
-p <- ggplot(data=df_long, aes(x=time, y=as.numeric(count), group=words, colour=words)) +  geom_line(aes(linetype=words), size=0.5) + geom_point(aes(shape=words)) + geom_dl(aes(label=words,color=words), method = list("last.points", cex = 0.6, hjust=0.9))
-p1<-p + ggtitle("") + xlab("Time") + ylab("Gender") + theme_bw() +ylim(-.25,.25)+ theme(legend.position="none")
-#direct.label(p1, list("angled.boxes", cex=0.5))
-ggsave("chart.png", width = 10, height = 6,limitsize=FALSE)
 ```
