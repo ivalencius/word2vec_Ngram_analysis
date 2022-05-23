@@ -21,9 +21,9 @@ decade <- c(#"pre_1899",
                    "1990_1999",
                    "2000_2009"
                  )
-#decade = c("1960_1969")
-dir = '/home/sveisa/'
-#dir= 'D:\\word2vec_Ngram_analysis\\projections\\matrices\\'
+decade = c("1960_1969")
+#dir = '/home/sveisa/'
+dir= 'D:\\word2vec_Ngram_analysis\\projections\\matrices\\'
 for (dec in decade) {
   model_name = paste(dir,'matrix',dec, '.csv', sep="")
   assign(paste0("matrix", c(dec)),
@@ -81,7 +81,7 @@ matrix_prefix <- "D:\\word2vec_Ngram_analysis\\projections\\matrices\\matrix"
 decade = "1960_1969"
 matrix <- read_csv(paste(matrix_prefix,decade,".csv", sep=""))
 matrix <- as.data.frame(matrix)
-colnames(matrix)[1] <- "words"
+#colnames(matrix)[1] <- "words"
 samp2 <- matrix[,-1]
 rownames(samp2) <- matrix[,1]
 df<-samp2
@@ -93,14 +93,25 @@ df<-samp2
 wordlist_filename = "D:\\word2vec_Ngram_analysis\\projections\\wordlist.csv" #words=c("mad","elegant")
 wordlist_df <- read.csv(wordlist_filename)
 words = c(wordlist_df[["WORD1"]])
-df<-data.frame(df[words,])
-df$time<-decade
-df <- cbind(rownames(df), data.frame(df, row.names=NULL)) #if you need to make rownames a column
-colnames(df)[1] <- "words" 
-assign(paste0("results", c(decade)), as.data.frame(df))
+df2<-data.frame(df[words,])
+df2$time<-decade
+df2 <- cbind(rownames(df2), data.frame(df2, row.names=NULL)) #if you need to make rownames a column
+#colnames(df2)[1] <- "words" 
+assign(paste0("results", c(decade)), as.data.frame(df2))
 write.csv(get(paste0("results", c(decade))),file=paste("results",decade,'.csv', sep=""),row.names = FALSE)
 ```
 
+# CREATE AVERAGE REPRESENTATION OF DIMENSION
+```{r}
+word_list <- c("woman", "women", "female", "girl", "lady")
+avg_rep <- function(word_list, model_matrix){
+   df<-data.frame(model_matrix[word_list,])
+   print(df)
+   new_representation <- as.data.frame.list(colMeans(df))
+   return(new_representation)
+}
+print(avg_rep(word_list, df))
+```
 # VIZ ONE MATRIX #
 ```{r}
 df$wordtime<-paste(df$words,df$time)
